@@ -5,12 +5,32 @@
   <style>
     body { font-family: Arial; text-align: center; margin-top: 40px; }
     input, button, select { padding: 10px; margin: 10px; font-size: 16px; }
+    table { margin: auto; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px 12px; }
     #feedback { font-weight: bold; margin-top: 15px; }
   </style>
 </head>
 <body>
 
 <h1>Sauk County EMS Tone Trainer & Quiz</h1>
+
+<!-- Department List Section -->
+<h2>Department Tones</h2>
+<table id="departmentTable">
+  <thead>
+    <tr>
+      <th>Department</th>
+      <th>Tone A (Hz)</th>
+      <th>Tone B (Hz)</th>
+      <th>Play</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Populated by JavaScript -->
+  </tbody>
+</table>
+
+<hr>
 
 <!-- Optional: Custom tone input -->
 <h2>Custom Two-Tone</h2>
@@ -43,8 +63,10 @@
 
 <script>
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let departments = [];
+let currentDepartment = null;
 
-// --- Custom tone functions ---
+// --- Tone player ---
 function playTone(freq, duration){
   const oscillator = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
@@ -56,6 +78,7 @@ function playTone(freq, duration){
   setTimeout(()=>oscillator.stop(), duration);
 }
 
+// Custom tone
 function playCustomTone(){
   const toneA = parseFloat(document.getElementById("toneA").value);
   const toneB = parseFloat(document.getElementById("toneB").value);
@@ -63,16 +86,28 @@ function playCustomTone(){
   setTimeout(()=>playTone(toneB, 3000), 1200);
 }
 
-// --- Quiz functions ---
-let departments = [];
-let currentDepartment = null;
-
+// --- Load departments.json ---
 fetch("departments.json")
   .then(res => res.json())
   .then(data => {
+    // filter valid tones
     departments = data.filter(d => d.toneA && d.toneB);
+    
+    // populate department table
+    const tbody = document.querySelector("#departmentTable tbody");
     const select = document.getElementById("guess");
     departments.forEach(d => {
+      // Add row
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${d.name}</td>
+        <td>${d.toneA}</td>
+        <td>${d.toneB}</td>
+        <td><button onclick="playDepartmentTone('${d.name}')">Play</button></td>
+      `;
+      tbody.appendChild(row);
+
+      // Add to quiz select
       const opt = document.createElement("option");
       opt.value = d.name;
       opt.textContent = d.name;
@@ -80,6 +115,16 @@ fetch("departments.json")
     });
   });
 
+// Play a department by name
+function playDepartmentTone(name){
+  const dep = departments.find(d => d.name === name);
+  if(dep){
+    playTone(dep.toneA, 1000);
+    setTimeout(()=>playTone(dep.toneB, 3000), 1200);
+  }
+}
+
+// --- Quiz functions ---
 function playRandomTone(){
   const index = Math.floor(Math.random()*departments.length);
   currentDepartment = departments[index];
