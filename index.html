@@ -1,23 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>EMS Tone Trainer</title>
-<link rel="stylesheet" href="style.css">
+<title>Sauk County Two Tone Trainer</title>
+
+<style>
+body{
+font-family: Arial;
+text-align:center;
+margin-top:40px;
+}
+
+input{
+margin:10px;
+padding:6px;
+}
+
+button{
+padding:10px 20px;
+margin-top:15px;
+font-size:16px;
+}
+
+</style>
 </head>
 
 <body>
 
-<h1>EMS Tone Trainer</h1>
+<h1>Sauk County EMS Tone Trainer</h1>
 
-<label>Tone A (Hz):</label>
+<p>Practice learning two-tone paging patterns</p>
+
+<div>
+<label>Tone A (Hz)</label><br>
 <input id="toneA" type="number" value="600">
+</div>
 
-<label>Tone B (Hz):</label>
+<div>
+<label>Tone B (Hz)</label><br>
 <input id="toneB" type="number" value="900">
+</div>
 
-<button onclick="playTones()">Play Tones</button>
+<button onclick="playSequence()">Play Two-Tone</button>
 
-<script src="tonegenerator.js"></script>
+<script>
+
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playTone(freq, duration){
+
+const oscillator = audioCtx.createOscillator();
+const gain = audioCtx.createGain();
+
+oscillator.type = "sine";
+oscillator.frequency.value = freq;
+
+oscillator.connect(gain);
+gain.connect(audioCtx.destination);
+
+oscillator.start();
+
+setTimeout(()=>{
+oscillator.stop();
+}, duration);
+
+}
+
+function playSequence(){
+
+const toneA = parseFloat(document.getElementById("toneA").value);
+const toneB = parseFloat(document.getElementById("toneB").value);
+
+playTone(toneA,1000);
+
+setTimeout(()=>{
+playTone(toneB,3000);
+},1200);
+
+}
+
+</script>
 
 </body>
 </html>
