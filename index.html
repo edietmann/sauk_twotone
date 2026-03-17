@@ -1,108 +1,85 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Sauk County EMS Tone Trainer & Quiz</title>
-  <style>
-    body { font-family: Arial; text-align: center; margin-top: 40px; }
-    input, button, select { padding: 10px; margin: 10px; font-size: 16px; }
-    #feedback { font-weight: bold; margin-top: 15px; }
-  </style>
+<title>Sauk County Two Tone Trainer</title>
+
+<style>
+body{
+font-family: Arial;
+text-align:center;
+margin-top:40px;
+}
+
+input{
+margin:10px;
+padding:6px;
+}
+
+button{
+padding:10px 20px;
+margin-top:15px;
+font-size:16px;
+}
+
+</style>
 </head>
+
 <body>
 
-<h1>Sauk County EMS Tone Trainer & Quiz</h1>
+<h1>Sauk County EMS Tone Trainer</h1>
 
-<!-- Optional: Custom tone input -->
-<h2>Custom Two-Tone</h2>
-<div>
-  <label>Tone A (Hz)</label><br>
-  <input id="toneA" type="number" value="600">
-</div>
-<div>
-  <label>Tone B (Hz)</label><br>
-  <input id="toneB" type="number" value="900">
-</div>
-<button onclick="playCustomTone()">Play Custom Tone</button>
-
-<hr>
-
-<!-- Quiz section -->
-<h2>Random Department Quiz</h2>
-<p>Hear a two-tone signal and guess the department!</p>
-<button onclick="playRandomTone()">Play Random Tone</button>
+<p>Practice learning two-tone paging patterns</p>
 
 <div>
-  <label>Guess Department:</label><br>
-  <select id="guess">
-    <option value="">--Select--</option>
-  </select><br><br>
-  <button onclick="checkAnswer()">Submit Guess</button>
+<label>Tone A (Hz)</label><br>
+<input id="toneA" type="number" value="600">
 </div>
 
-<p id="feedback"></p>
+<div>
+<label>Tone B (Hz)</label><br>
+<input id="toneB" type="number" value="900">
+</div>
+
+<button onclick="playSequence()">Play Two-Tone</button>
 
 <script>
+
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-// --- Custom tone functions ---
 function playTone(freq, duration){
-  const oscillator = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  oscillator.type = "sine";
-  oscillator.frequency.value = freq;
-  oscillator.connect(gain);
-  gain.connect(audioCtx.destination);
-  oscillator.start();
-  setTimeout(()=>oscillator.stop(), duration);
+
+const oscillator = audioCtx.createOscillator();
+const gain = audioCtx.createGain();
+
+oscillator.type = "sine";
+oscillator.frequency.value = freq;
+
+oscillator.connect(gain);
+gain.connect(audioCtx.destination);
+
+oscillator.start();
+
+setTimeout(()=>{
+oscillator.stop();
+}, duration);
+
 }
 
-function playCustomTone(){
-  const toneA = parseFloat(document.getElementById("toneA").value);
-  const toneB = parseFloat(document.getElementById("toneB").value);
-  playTone(toneA, 1000);
-  setTimeout(()=>playTone(toneB, 3000), 1200);
+function playSequence(){
+
+const toneA = parseFloat(document.getElementById("toneA").value);
+const toneB = parseFloat(document.getElementById("toneB").value);
+
+playTone(toneA,1000);
+
+setTimeout(()=>{
+playTone(toneB,3000);
+},1200);
+
 }
 
-// --- Quiz functions ---
-let departments = [];
-let currentDepartment = null;
-
-fetch("departments.json")
-  .then(res => res.json())
-  .then(data => {
-    departments = data.filter(d => d.toneA && d.toneB);
-    const select = document.getElementById("guess");
-    departments.forEach(d => {
-      const opt = document.createElement("option");
-      opt.value = d.name;
-      opt.textContent = d.name;
-      select.appendChild(opt);
-    });
-  });
-
-function playRandomTone(){
-  const index = Math.floor(Math.random()*departments.length);
-  currentDepartment = departments[index];
-  playTone(currentDepartment.toneA, 1000);
-  setTimeout(()=>playTone(currentDepartment.toneB, 3000), 1200);
-  document.getElementById("feedback").textContent = "";
-}
-
-function checkAnswer(){
-  const guess = document.getElementById("guess").value;
-  if(!currentDepartment){
-    alert("Play a tone first!");
-    return;
-  }
-  if(guess === currentDepartment.name){
-    document.getElementById("feedback").textContent = "✅ Correct!";
-    document.getElementById("feedback").style.color = "green";
-  } else {
-    document.getElementById("feedback").textContent = `❌ Wrong! It was ${currentDepartment.name}`;
-    document.getElementById("feedback").style.color = "red";
-  }
-}
 </script>
 
 </body>
 </html>
+
